@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- ... -->
+    <title>Chat with {{ expert }}</title>
+    <style>
+        /* Basic styles for the chat interface */
+        #chat-box {
+            width: 80%;
+            height: 400px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Chat with {{ expert }}</h1>
+
+    <!-- Display area for chatbot and user messages -->
+    <div id="chat-box"></div>
+
+    <!-- Input field for user messages -->
+    <textarea id="user-input" rows="3" style="width: 80%;"></textarea>
+    <br>
+
+    <!-- Button to send the message -->
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const expertName = "{{ expert }}";
+
+        function sendMessage() {
+            const chatBox = document.getElementById('chat-box');
+            const userInput = document.getElementById('user-input');
+
+            // Append the user's message to the chat box
+            chatBox.innerHTML += '<div><strong>' + expertName + ':</strong> ' + userInput.value + '</div>';
+
+            // Send the message to the server
+            fetch(`/chatbot/${expertName}/send_message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'user_message=' + encodeURIComponent(userInput.value)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Append the chatbot's response to the chat box
+                    chatBox.innerHTML += '<div><strong>{{ expert }}:</strong> ' + data.response + '</div>';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+
+            // Clear the user input field
+            userInput.value = '';
+        }
+    </script>
+</body>
+
+</html>
+
+
+<script>
+    // Define the AngularJS app
+    (function() {
+  var app = angular.module('chatApp', []);
+
+  app.controller('MessageCtrl', function($scope) {
+    $scope.messages = [{
+      Name: 'George Clooney',
+      Message: "The only failure is not to try"
+    }, {
+      Name: 'Seth Rogen',
+      Message: "I grew up in Vancouver, man. That's where more than half of my style comes from."
+    }, {
+      Name: 'John Lydon',
+      Message: "There's nothing glorious in dying. Anyone can do it."
+    }];
+  });
+
+})();
+</script>
+
+
+# 12 sep
+
+<script>
+    var app = angular.module('chatApp', []);
+
+    app.controller('MessageCtrl', ['$scope', '$http', function($scope, $http) {
+
+        // Initialize messages as an empty array
+        $scope.messages = [];
+
+        $scope.sendAngularMessage = function() {
+            if ($scope.userMessage) {
+                // Add the user's message to the list
+                $scope.messages.push({
+                    sender: 'You',
+                    text: $scope.userMessage
+                });
+
+                // Assuming expertName is defined somewhere, e.g., in your $scope
+                // If not, you need to define or pass it appropriately
+                $scope.expert = initialExpertValue;
+                var expertName = $scope.expert;
+
+                // Send the message to the server
+                $http({
+                    method: 'POST',
+                    url: `/chatbot/${expertName}/send_message`,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    data: {
+                        user_message: $scope.userMessage
+                    }
+                }).then(function(response) {
+                    // Append the chatbot's response to the list
+                    $scope.messages.push({
+                        sender: expertName,
+                        text: response.data.response
+                    });
+                }, function(error) {
+                    console.error('Error:', error);
+                });
+
+                // Clear the user input field
+                $scope.userMessage = '';
+            }
+        };
+    }]);
+</script>
+
+
+# 12 sep later
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Nunito', sans-serif;
+  }
+  
+  html, body {
+    background: linear-gradient(120deg, rgba(23, 190, 187, 1), rgba(240, 166, 202, 1));
+    overflow: hidden;
+  }
+  
+  .container {
+    display: flex;
+    justify-content: center;  /* Horizontally center content within the container */
+    align-items: center;      /* Vertically center content within the container */
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;               /* Adjust this as needed */
+    margin: auto;             /* Centers the .container itself */
+}
+  
+  .container h1 {
+    margin: 0.5em auto;
+    color: #FFF;
+    text-align: center;
+  }
+  
+  .chatbox {
+    background: rgba(255, 255, 255, 0.05);
+    width: 65%;
+    height: 75%;
+    border-radius: 0.2em;
+    position: relative;
+    box-shadow: 1px 1px 12px rgba(0, 0, 0, 0.1);
+  }
+  .chatbox__messages {
+    max-height: 95%; /* Adjust this based on your desired maximum height */
+    overflow-y: auto;  /* Enables vertical scrolling */
+  }
+
+  .chatbox__messages__user-message--ind-message.right {
+    float: right;
+    word-wrap: break-word;
+  }
+  
+  
+  .chatbox__messages__user-message--ind-message.left {
+    float: left;
+    word-wrap: break-word;
+}
+
+  .chatbox__messages__user-message {
+    max width: 450px;
+  }
+  
+  .chatbox__messages__user-message--ind-message {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 1em 0;
+    height: auto;
+    width: 65%;
+    border-radius: 5px;
+    margin: 2em 1em;
+    position: relative;
+    overflow: auto;
+    
+  }
+  
+  .chatbox__messages__user-message--ind-message > p.name {
+    color: #FFF;
+    font-size: 1.2em;
+  }
+  
+  .chatbox__messages__user-message--ind-message > p.message {
+    color: #FFF;
+    font-size: 1em;
+    margin: 0.5em 2.8em;
+  }
+  
+  .chatbox__user-list {
+    background: rgba(255, 255, 255, 0.1);
+    width: 25%;
+    height: 100%;
+    float: right;
+    border-top-right-radius: 0.2em;
+    border-bottom-right-radius: 0.2em;
+  }
+  
+  .chatbox__user-list h1 {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.5em;
+    padding: 1em;
+    margin: 0;
+    font-weight: 300;
+    text-align: center;
+  }
+  
+  .chatbox__user {
+    width: 0.5em;
+    height: 0.5em;
+    border-radius: 100%;
+    margin: 1em 0.7em;
+  }
+  
+  .chatbox__user--active {
+    background: rgba(23, 190, 187, 0.8);
+  }
+  
+  
+  
+  .chatbox p {
+    float: left;
+    text-align: left;
+    margin: -0.25em 2em;
+    font-size: 1em;
+    font-weight: 300;
+    color: #FFF;
+    width: 200px;
+  }
+  
+  .chatbox form {
+    background: #222;
+  }
+  
+  .chatbox form input {
+    background: rgba(255, 255, 255, 0.03);
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    border: none;
+    width: 75%;
+    padding: 1.2em;
+    outline: none;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 300;
+  }
+
+  .chatbox form button {
+    background: linear-gradient(90deg, rgba(23, 190, 187, 1), rgba(240, 166, 202, 1));
+    position: absolute;
+    bottom: 4px; /* adjusted position to align with the input */
+    right: 10px; /* adjusted position for better spacing */
+    border: none;
+    width: 20%;  /* adjusted width to make it more button-sized */
+    padding: 1em 1.2em;
+    outline: none;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500; /* increased font weight for better visibility */
+    border-radius: 5px; /* added some border-radius to make it look nicer */
+    transition: background 0.3s ease; /* for smooth transition during hover */
+}
+
+.chatbox form button:hover {
+    background: linear-gradient(90deg, rgba(240, 166, 202, 1), rgba(23, 190, 187, 1));
+    cursor: pointer;
+}
+
+  
+  /* Placeholder Styling */
+  ::-webkit-input-placeholder {
+     color: rgba(255, 255, 255, 0.9);
+  }
+  
+  :-moz-placeholder {
+     color: rgba(255, 255, 255, 0.9);
+  }
+  
+  ::-moz-placeholder {
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  :-ms-input-placeholder {
+     color: rgba(255, 255, 255, 0.9);
+  }
+  

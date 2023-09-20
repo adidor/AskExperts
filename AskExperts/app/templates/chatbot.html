@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="chatApp">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat With {{expert}} </title>
+    <link rel="stylesheet" href="/static/chatbott.css">
+
+    <!-- AngularJS CDN -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-sanitize.js"></script>
+
+</head>
+
+<body ng-cloak>
+
+    <div class="container">
+        <h1>Chat With {{expert}}</h1>
+        <div class="chatbox" ng-controller="MessageCtrl">
+
+            <!-- User List Section -->
+            <!-- ... (this remains unchanged) ... -->
+            <div class="chatbox__user-list">
+                <h1>Chat with another expert</h1>
+                <div class="chatbox__user chatbox__user--active">
+                    <a href="/chatbot/Andrew%20Huberman"><p>Andrew Huberman</p></a>
+                </div>
+                <div class="chatbox__user chatbox__user--active">
+                    <a href="/chatbot/Athlean-X"><p>Athlean-X</p></a>
+                </div>
+                <div class="chatbox__user chatbox__user--active">
+                    <a href="/chatbot/Peter%20Attia"><p>Peter Attia</p></a>
+                </div>
+                <div class="chatbox__user chatbox__user--active">
+                    <a href="/chatbot/Kurzgesagt"><p>Kurzgesagt</p></a>
+                </div>
+                <div class="chatbox__user chatbox__user--active">
+                    <a href="/chatbot/Lex%20Fridman"><p>Lex Fridman</p></a>
+                </div>
+                <div class="chatbox__user chatbox__user--active">
+                    <a href="/chatbot/AI%20Explained"><p>AI Explained</p></a>
+                </div>
+            </div>
+
+            <!-- Messages Section -->
+            {% raw %}
+            <div class="chatbox__messages" id="chatboxMessages">
+                <div ng-repeat="message in messages" 
+                     class="chatbox__messages__user-message"
+                     ng-class="{'api-response': message.sender === expertName, 'user-message': message.sender === 'You'}">
+            
+                    <div class="chatbox__messages__user-message--ind-message" ng-class="{'right': message.sender === 'You', 'left': message.sender !== 'You'}">
+                        <p class="name">{{ message.sender }}</p>
+                        <p class="message" ng-bind-html="message.text"></p>
+
+                    </div>
+                </div>
+            </div>
+            
+            {% endraw %}
+            
+            <!-- Input Form -->
+            <form ng-submit="sendAngularMessage()">
+                <input type="text" ng-model="userMessage" placeholder="Enter your message">
+                <button type="submit">Send</button>
+            </form>
+            
+
+        </div>
+    </div>
+    
+
+    <script type="text/javascript">
+        var initialExpertValue = "{{ expert }}";
+        function scrollToBottom() {
+            var messagesDiv = document.getElementById("chatboxMessages");
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+        
+    </script>
+    
+    <script>
+
+        var app = angular.module('chatApp', ['ngSanitize']);
+    
+        app.controller('MessageCtrl', ['$scope', '$http', '$location', '$anchorScroll',  function($scope, $http, $location, $anchorScroll) {
+            $scope.formatText = function(text) {
+            return text.replace(/\n/g, '<br>');
+            };
+            // Initialize messages as an empty array
+            $scope.messages = [];
+    
+            $scope.sendAngularMessage = function() {
+                if ($scope.userMessage) {
+                    $scope.$watchCollection('messages', function(newVal, oldVal) {
+                    if (newVal.length > oldVal.length && newVal[newVal.length - 1].sender === expertName) {
+                        scrollToBottom();
+                    }
+                });
+                    // Add the user's message to the list
+                    $scope.messages.push({
+                        sender: 'You',
+                        text: $scope.userMessage
+                    });
+                    $location.hash('bottom'); 
+                    $anchorScroll();
+                    // Assuming expertName is defined somewhere, e.g., in your $scope
+                    // If not, you need to define or pass it appropriately
+                    $scope.expert = initialExpertValue;
+                    var expertName = $scope.expert;
+
+                    // Send the message to the server
+                    $http({
+                        method: 'POST',
+                        url: `/chatbot/${expertName}/send_message`,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        data: {
+                            user_message: $scope.userMessage,
+                            conversation: $scope.messages
+                        }
+                    }).then(function(response) {
+                        // Append the chatbot's response to the list
+                        $scope.messages.push({
+                            sender: expertName,
+                            text: $scope.formatText(response.data.response)
+                        });
+                    scrollToBottom();
+                    }, function(error) {
+                        console.error('Error:', error);
+                    });
+    
+                    // Clear the user input field
+                    $scope.userMessage = '';
+                    $scope.$apply();
+                    
+
+
+                }
+            };
+        }]);
+    </script>
+    
+
+</body>
+
+</html>
+
+        
+            
+    
+            
